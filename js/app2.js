@@ -51,33 +51,61 @@ var App = React.createClass({
 
 var Month = React.createClass({  
 
-  render: function() {  
-
+  getInitialState: function() {
     var now = new Date();
     var now = now.getMonth();
+    return {
+      current: now      
+    };
+  },
+
+  nextMonth: function(e) {
+    e.preventDefault();
+    if (this.state.current < this.props.monthnum.length-1) {
+      this.setState({
+        current: this.state.current+1,
+        ended: false
+      });
+    }
+    else {
+      this.setState({
+        ended: true
+      });
+    }
+  },
+
+  prevMonth: function(e) {
+    e.preventDefault();
+    if (this.state.current > 0) {
+      this.setState({
+        current: this.state.current-1,
+        ended: false
+      });
+    }
+    else {
+      this.setState({
+        ended: true
+      });
+    }
+  },
+
+  render: function() {  
+
+    var current = this.state.current;    
+
+    console.log(current);
 
     var monthnum = this.props.monthnum;    
-    var thismonth = this.props.monthnum[now].name;
+    var thismonth = this.props.monthnum[current].name;
 
     console.log(thismonth);
-    
-    
-    var singleMonth = monthnum.map(
-      function (item, index) {
-        return (
-            <div key={index}>
-                <SingleMonth data={item}/>
-            </div>
-        )
-      }
-    );
+        
+    console.log(monthnum);    
 
-    console.log(monthnum);
-    console.log(singleMonth);
-
-    return (
+    return (      
       <div> 
-        {singleMonth}       
+        <a href="#" onClick={this.nextMonth} className={'testClass ' + (current < 12 ? 'not': 'active')}>next</a>
+        <a href="#" onClick={this.prevMonth} className={'testClass ' + (current > 0 ? 'not': 'active')}>prev</a>
         <h1>{thismonth}</h1>
       </div>
     );
