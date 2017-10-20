@@ -58,6 +58,8 @@ var App = React.createClass({
 var dateNow = new Date();    
 var now = dateNow.getMonth();    
 var year = dateNow.getFullYear();    
+var day = dateNow.getDay();
+console.log(day);
 
 var Month = React.createClass({  
 
