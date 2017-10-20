@@ -1,3 +1,9 @@
+Date.prototype.getDaysInMonth = function () {
+      var here = new Date(this.getTime());
+      here.setDate(32);
+      return 32 - here.getDate();
+};
+
 var myMonths = [
   {
     name: 'Jan'
@@ -49,13 +55,24 @@ var App = React.createClass({
 
 });
 
+var dateNow = new Date();    
+var now = dateNow.getMonth();    
+var year = dateNow.getFullYear();    
+
 var Month = React.createClass({  
 
-  getInitialState: function() {
-    var now = new Date();
-    var now = now.getMonth();
+  getInitialState: function() {    
+
+    if (now != this.props.monthnum.length-1 && now!= 0) {
+      var ended = false; 
+    }    
+    else {
+      var ended = true;
+    }
     return {
-      current: now      
+      current: now,
+      ended: ended,
+      year: year
     };
   },
 
@@ -69,7 +86,9 @@ var Month = React.createClass({
     }
     else {
       this.setState({
-        ended: true
+        ended: true,
+        current: 0,
+        year: this.state.year+1
       });
     }
   },
@@ -84,7 +103,9 @@ var Month = React.createClass({
     }
     else {
       this.setState({
-        ended: true
+        ended: true,
+        current: 11,
+        year: this.state.year-1
       });
     }
   },
@@ -92,6 +113,10 @@ var Month = React.createClass({
   render: function() {  
 
     var current = this.state.current;    
+
+    var days = dateNow.getDaysInMonth();
+
+    console.log(days);
 
     console.log(current);
 
@@ -104,23 +129,13 @@ var Month = React.createClass({
 
     return (      
       <div> 
-        <a href="#" onClick={this.nextMonth} className={'testClass ' + (current < 12 ? 'not': 'active')}>next</a>
-        <a href="#" onClick={this.prevMonth} className={'testClass ' + (current > 0 ? 'not': 'active')}>prev</a>
-        <h1>{thismonth}</h1>
+        <a href="#" onClick={this.prevMonth} className={'testClass ' + (current > 0 ? 'active': 'not')}>prev</a>
+        <a href="#" onClick={this.nextMonth} className={'testClass ' + (current < 11 ? 'active': 'not')}>next</a>   
+        <h2>{this.state.year}</h2>
+        <h1 days={days}>{thismonth}</h1>
       </div>
     );
   }
-});
-
-var SingleMonth = React.createClass({
-
-  render: function() {
-    var monthName = this.props.data.name;
-    return (
-      <p>{monthName}</p>
-    )
-  }
-
 });
 
 ReactDOM.render(
