@@ -48,7 +48,8 @@ var App = React.createClass({
 	render: function() {
 		return (
       <div>
-       <Month monthnum={myMonths} />
+       <Month monthnum={myMonths}>          
+       </Month>
        </div>
 		);
 	}
@@ -65,87 +66,53 @@ var Month = React.createClass({
 
   getInitialState: function() {    
     
-    if (now != this.props.monthnum.length-1 && now!= 0) {
-      var ended = false; 
-    }    
-    else {
-      var ended = true;
-    }
     return {
       current: now,
-      ended: ended,
       year: year,
       day: thisDate.getDay(),
       days: thisDate.getDaysInMonth()
     };
   },
 
-  nextMonth: function(e) {
+  changeMonth: function(step, e) {
     e.preventDefault();   
 
-    if (this.state.current < this.props.monthnum.length-1) {
+    var changedYear = this.state.year+step;
 
-      var currentNext = this.state.current+1;
-      var thisDate = new Date(this.state.year, currentNext);
+      if ((this.state.current == 11) && (step == 1)) {        
+        var thisDate = new Date(changedYear, 0);
 
+        this.setState({          
+          current: 0,
+          year: changedYear
+        });
+      }
+
+      else {
+
+        if ((this.state.current == 0) && (step == -1)) {
+          var thisDate = new Date(changedYear, 11);
+
+          this.setState({
+            current: 11,
+            year: changedYear
+          });
+        }
+
+        else {
+
+          var currentNext = this.state.current+step;
+          var thisDate = new Date(this.state.year, currentNext);
+
+          this.setState({
+            current: currentNext
+          });
+        }
+      }
       this.setState({
-        current: currentNext,
-        ended: false,
-        day: thisDate.getDay(),
-        days: thisDate.getDaysInMonth(),
-        // monthName: this.props.monthnum[currentNext].name
-      });
-    }
-    else {
-
-      var yearNext = this.state.year+1;
-      var thisDate = new Date(yearNext, 0);
-
-      this.setState({
-        ended: true,
-        current: 0,
-        year: yearNext,
-        day: thisDate.getDay(),
-        days: thisDate.getDaysInMonth()
-      });
-    }
-    console.log(thisDate + 'ttt');
-  },
-
-  prevMonth: function(e) {
-    e.preventDefault();
-    if (this.state.current > 0) {
-
-      var currentPrev = this.state.current-1;
-      var thisDate = new Date(this.state.year, currentPrev);      
-
-      this.setState({
-        current: currentPrev,
-        ended: false,
         day: thisDate.getDay(),
         days: thisDate.getDaysInMonth()
       });
-    }
-    else {
-
-      var yearPrev = this.state.year-1;
-      var thisDate = new Date(yearPrev, 11);
-
-      this.setState({
-        ended: true,
-        current: 11,
-        year: yearPrev,
-        day: thisDate.getDay(),
-        days: thisDate.getDaysInMonth()
-      });
-    }
-    var thisDate = new Date(this.state.year, this.state.current);
-    this.setState({
-      day: thisDate.getDay(),
-      days: thisDate.getDaysInMonth()
-    });
-    console.log(thisDate + 'bbb');
-
   },
 
   render: function() {  
@@ -153,33 +120,71 @@ var Month = React.createClass({
     var current = this.state.current;    
 
     var days = dateNow.getDaysInMonth();
-
-    console.log(days);
-
-    console.log(current);
-
     var monthnum = this.props.monthnum;    
     var thismonth = this.props.monthnum[current].name;
 
-    console.log(thismonth);
-        
-    console.log(monthnum);    
-
-    console.log(this.state.day + 'is day');
-    console.log(this.state.days + 'is total days');
-
     return (      
       <div> 
-        <a href="#" onClick={this.prevMonth} className={'testClass ' + (current > 0 ? 'active': 'not')}>prev</a>
-        <a href="#" onClick={this.nextMonth} className={'testClass ' + (current < 11 ? 'active': 'not')}>next</a>   
+        <a href="#" onClick={this.changeMonth.bind(this, -1)} className={'testClass ' + (current > 0 ? 'active': 'not')}>prev</a>
+        <a href="#" onClick={this.changeMonth.bind(this, 1)} className={'testClass ' + (current < 11 ? 'active': 'not')}>next</a>   
         <h2>{this.state.year}</h2>
         <h1 days={days}>{thismonth}</h1>
-        <div className='calc-block'>
-
-        </div>
+        <Calendar days={this.state.days} day={this.state.day}/>
       </div>
     );
   }
+});
+
+var Calendar = React.createClass({
+
+    render: function() {
+      var days = this.props.days;
+      var day = this.props.day;
+
+      let daysArray = [];
+
+        var dayOffset = this.props.day;
+        if (dayOffset == 0) {
+           dayOffset = 7;
+        }
+
+
+        for (var i = 2; i <= dayOffset; i++) {          
+          daysArray.push(
+            <Day myDay='00' key={100+i}></Day>
+          );
+        }
+
+        for (var i = 1; i <= this.props.days; i++) {
+          var myDay = {
+              number: i,
+          };
+          daysArray.push(
+            <Day myDay={myDay} key={i}></Day>
+          );
+        }
+
+        return (
+          <div className="row month">
+            {daysArray}
+          </div>
+        );        
+    }
+
+});
+
+var Day = React.createClass({
+
+  render: function () {
+    return (
+      <div className={'single-day ' + this.props.myDay.eventStatus}>
+        {this.props.myDay.number}
+        {this.props.myDay.eventTitle}
+        {this.props.myDay.eventLink}
+      </div>
+    )
+  }
+
 });
 
 ReactDOM.render(
