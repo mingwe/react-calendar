@@ -43,6 +43,31 @@ var myMonths = [
   }
 ];
 
+var myEvents = [
+  {
+    1: {      
+        title: 'Something happened',
+        status: 1,
+        link: 'google.com'
+    },
+    4: {      
+        title: 'another event',
+        status: 2,
+        link: 'yahoo.com'
+    },
+    7: {      
+        title: 'another bad event',
+        status: 3,
+        link: 'yahoo.com'
+    },
+    10: {      
+        title: 'third event',
+        status: 3,
+        link: 'youtube.com'
+    }
+  }
+];
+
 var App = React.createClass({
 
 	render: function() {
@@ -164,6 +189,8 @@ var Calendar = React.createClass({
           );
         }
 
+        console.log (daysArray);
+
         return (
           <div className="row month">
             {daysArray}
@@ -176,11 +203,19 @@ var Calendar = React.createClass({
 var Day = React.createClass({
 
   render: function () {
+    var dayEvent = this.props.myDay.number
+    var eventTitle = myEvents['0'][dayEvent];
+    if (eventTitle) {
+      console.log('the title is: ' + eventTitle.title);
+      this.props.myDay.eventTitle = eventTitle.title;
+      this.props.myDay.eventStatus = eventTitle.status;
+      this.props.myDay.eventLink = eventTitle.link;
+    }
+    console.log(eventTitle);
     return (
-      <div className={'single-day ' + this.props.myDay.eventStatus}>
-        {this.props.myDay.number}
-        {this.props.myDay.eventTitle}
-        {this.props.myDay.eventLink}
+      <div className={'single-day eventstatus'+this.props.myDay.eventStatus}>      
+        <span>{this.props.myDay.number}</span>
+        { eventTitle && <a href={this.props.myDay.eventLink}>{this.props.myDay.eventTitle}</a> }        
       </div>
     )
   }
