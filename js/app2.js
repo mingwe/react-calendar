@@ -65,6 +65,7 @@ var myEvents = [
 ];
 
 
+//func for formatting val to numbers from 0 to 11
 function formatVal (val) {
     if (val > 11) {
         val = val - 12;
@@ -74,7 +75,6 @@ function formatVal (val) {
             val = val + 12;
         }
     }
-    console.log(val);
     return(val);
 };
 
@@ -91,13 +91,9 @@ var App = React.createClass({
 
 });
 
-var dateNow = new Date();
-
-var monthCurrent = dateNow.getMonth();
-var yearCurrent = dateNow.getFullYear();
-
-// console.log(monthCurrent);
-// console.log(yearCurrent);
+var dateNow = new Date(),
+    monthCurrent = dateNow.getMonth(),
+    yearCurrent = dateNow.getFullYear();
 
 var Month = React.createClass({
 
@@ -105,10 +101,12 @@ var Month = React.createClass({
     return {
       monthCurrent: monthCurrent,
       yearCurrent: yearCurrent,
-      DIMCurrent: dateNow.getDaysInMonth()
+      DIMCurrent: dateNow.getDaysInMonth(),
+      picked: 1
     };
   },
 
+    //onclick func for changing month
     changeMonth: function(step, e) {
       e.preventDefault();
 
@@ -132,137 +130,160 @@ var Month = React.createClass({
 
     },
 
-    dayClicked: function(e) {
+    //func when picking a day
+    dayClicked: function(i, e) {
       e.preventDefault();
-      console.log(e);
+      this.setState({
+         picked: this.state.picked= i+'.'+(this.state.monthCurrent+1)+'.'+this.state.yearCurrent
+      });
+      console.log(this.state.picked);
     },
 
   render: function() {
 
+      var monthCurrent = this.state.monthCurrent,
+          yearCurrent = this.state.yearCurrent,
+          DIMCurrent = this.state.DIMCurrent,
+          dateCurrent = new Date(yearCurrent, monthCurrent),
+          monthPrev = this.state.monthCurrent-1,
+          datePrev = new Date(yearCurrent, monthPrev),
+          DIMPrev = datePrev.getDaysInMonth(),
+          stampfirstDay = +new Date(yearCurrent, monthCurrent, 1),//first day's of current month timestamp
+          stamplastDay = +new Date(yearCurrent, monthCurrent, DIMCurrent, 23, 59, 59);//last day's of current month timestamp
 
-      var monthCurrent = this.state.monthCurrent;
-      var yearCurrent = this.state.yearCurrent;
-      var DIMCurrent = this.state.DIMCurrent;
-      var dateCurrent = new Date(yearCurrent, monthCurrent);
+      let daysArray = [],
+          daysEventsArray = [];
 
-      var monthPrev = this.state.monthCurrent-1;
-      var datePrev = new Date(yearCurrent, monthPrev);
-      var DIMPrev = datePrev.getDaysInMonth();
-
-
-      var stampfirstDay = +new Date(yearCurrent, monthCurrent, 1);
-      var stamplastDay = +new Date(yearCurrent, monthCurrent, DIMCurrent, 23, 59, 59);
-      var timestampFirst = new Date(stampfirstDay);
-      var timestampLast = new Date(stamplastDay);
-        // alert(stampfirstDay);
-        // alert(stamplastDay);
-
-
-
-      let daysArray = [];
-
-      let daysEventsArray = [];
-
-      var dayOffset = dateCurrent.getDay() -1;
+      //for week start at monday
+      let dayOffset = dateCurrent.getDay() -1;
       if (dayOffset == -1) {
           dayOffset = 6;
       }
 
       if (monthCurrent == 0) {
-          var monthPrev = 12;
-          var yearPrev = yearCurrent - 1;
+          var monthPrev = 12,
+              yearPrev = yearCurrent - 1;
       }
       else {
-          var monthPrev = monthCurrent;
-          var yearPrev = yearCurrent;
+          var monthPrev = monthCurrent,
+              yearPrev = yearCurrent;
       }
+
+      //filling days array with part of prev month
       for(var x = DIMPrev-dayOffset+1; x <= DIMPrev; x++) {
         daysArray.push(
-            <div thedate={x+'.'+monthPrev+'.'+yearPrev} className='side-month' key={+('0.'+x)}>{x}.{monthPrev}.{yearPrev}</div>
+            <div thedate={x+'.'+monthPrev+'.'+yearPrev} className='side-month' key={+('0.'+x)}>{x}</div>
         );
       }
 
+      //filling array with day numbers of current month
       for(var i = 1; i <= DIMCurrent; i++) {
           daysEventsArray['day' + i] = {};
       }
-      var totalEvents = myEvents.length;
-      var eventsArray = [ {'test': {}}];
 
+      let totalEvents = myEvents.length;
+
+      //adding events to days in current month array
       for (var count = 0; count < totalEvents; count++ ) {
           var eventStartDate = +new Date(myEvents[count].event_start);
           let eventEndDate = +new Date(myEvents[count].event_end);
 
+          //checking if this month have some events
           if ((stampfirstDay < eventStartDate && eventStartDate < stamplastDay) || (stampfirstDay < eventEndDate && eventEndDate < stamplastDay)) {
 
+              //true if event started in prev month
               if (!(stampfirstDay < eventStartDate && eventStartDate < stamplastDay)) {
                   var eventStartDayNum = 1;
                   var eventStartDate = +new Date(yearCurrent, monthCurrent);
-                  console.log(eventStartDate + 'ESD');
               }
+              //if event started in current month
               else {
-                  var eventStartDayNum = (new Date(myEvents[count].event_start)).getDate();
+                  var eventStartDayNum = (new Date(myEvents[count].event_start)).getDate(); //day number of event start
               }
 
-              let eventLength = Math.ceil((eventEndDate - eventStartDate)/86400000);
+              let eventLength = Math.ceil((eventEndDate - eventStartDate)/86400000); //counting event length in days
 
+              //for events few days length
               for (let z=1; z<=eventLength; z++) {
-
                   var dayNumber = eventStartDayNum + z - 1;
-
                   if (dayNumber <= DIMCurrent) {
-
+                      //if this day already has a event, adding this event with another index
                       for (var i = 0; (daysEventsArray['day' + dayNumber][i]); i++) {}
-
                       daysEventsArray['day' + dayNumber][i] = {};
                       daysEventsArray['day' + dayNumber][i]['event_title'] = myEvents[count].event_title;
                       daysEventsArray['day' + dayNumber][i]['event_status'] = myEvents[count].event_status;
-
                   }
-
               }
 
           }
       }
       for(var i = 1; i <= DIMCurrent; i++) {
 
-          var toPush = '';
+        var toPush = [];
+        let eventStatus = 0;
 
-          for (var z = 0; (daysEventsArray['day' + i][z]); z++) {
-              toPush += daysEventsArray['day' + i][z]['event_title'];
-          }
+        if (daysEventsArray['day' + i][0]) {
+            for (var z = 0; (daysEventsArray['day' + i][z]); z++) {
+                toPush.push(
+                    daysEventsArray['day' + i][z]
+                )
+            }
+        }
+
+        let dayTemplate;
+
+        if (toPush.length) {
+            var toPush = toPush.map(function (item, index) {
+                eventStatus = item.event_status;
+                return (
+                    <p key={index}>
+                        {item.event_title}
+                    </p>
+                )
+            });
+
+            dayTemplate = (
+                <a href='#' onClick={this.dayClicked.bind(this, i)}>
+                    {i}
+                    <div className='event-preview'>
+                        { toPush }
+                    </div>
+                </a>
+            )
+        }
+        else {
+            dayTemplate = (i)
+        }
+
+
         daysArray.push(
-          <div thedate={i+'.'+(monthCurrent+1)+'.'+yearCurrent} key={i}>
-              <a href='#' onClick={this.dayClicked}>
-                {i}.{monthCurrent+1}.{yearCurrent}
-                  {toPush}
-              </a>
+          <div key={i} className={ 'single-day '+ (eventStatus ? 'day-has-event event-status-'+eventStatus : '') }>
+              {dayTemplate}
           </div>
         );
-        // daysEventsArray.push(
-        //     {
-        //         'dayNumber': i,
-        //     }
-        // );
+        console.log(eventStatus);
       }
+
 
       console.log(daysEventsArray);
 
 
       if (monthCurrent == 11) {
-          var monthNext = 0;
-          var yearNext = yearCurrent + 1;
+          var monthNext = 0,
+              yearNext = yearCurrent + 1;
       }
       else {
-          var monthNext = monthCurrent+1;
-          var yearNext = yearCurrent;
+          var monthNext = monthCurrent+1,
+              yearNext = yearCurrent;
       }
 
       let PCDCount = i+dayOffset-1;
       let daysNext = (7*(Math.floor(PCDCount/7))+7)-PCDCount;
 
+      //filling days array with part of next month
       for(var y = 1; y <= daysNext; y++) {
           daysArray.push(
-              <div thedate={y+'.'+(monthNext+1)+'.'+yearNext} className='side-month' key={+('1.'+y)} >{y}.{monthNext+1}.{yearNext}</div>
+              <div thedate={y+'.'+(monthNext+1)+'.'+yearNext} className='side-month' key={+('1.'+y)} >{y}</div>
           );
       }
 
@@ -275,81 +296,13 @@ var Month = React.createClass({
         <a href="#" onClick={this.changeMonth.bind(this, 1)} className={'testClass'}>next</a>
         <h1>{this.props.monthnum[monthCurrent].name} {yearCurrent}</h1>
         <DayNames/>
-        {/*<h2>{this.state.currentDate}</h2>*/}
-        {/*<h1 days={days}>{thismonth}</h1>*/}
-
-        {/*<Calendar days={this.state.days} day={this.state.day}/>*/}
         <div className='calendar'>{daysArray}</div>
       </div>
     );
   }
 });
 
-// var Calendar = React.createClass({
-//
-//     render: function() {
-//       var days = this.props.days;
-//       var day = this.props.day;
-//
-//       // let daysArray = [];
-//       //
-//       //   var dayOffset = this.props.day;
-//       //   if (dayOffset == 0) {
-//       //      dayOffset = 7;
-//       //   }
-//       //
-//       //
-//       //   for (var i = 2; i <= dayOffset; i++) {
-//       //     daysArray.push(
-//       //       <Day myDay='00' key={100+i}></Day>
-//       //     );
-//       //   }
-//       //
-//       //   for (var i = 1; i <= this.props.days; i++) {
-//       //     var myDay = {
-//       //         number: i,
-//       //     };
-//       //     daysArray.push(
-//       //       <Day myDay={myDay} key={i}></Day>
-//       //     );
-//       //   }
-//       //
-//       //   console.log (daysArray);
-//
-//         return (
-//           <div className="row month">
-//             {/*{daysArray}*/}
-//           </div>
-//         );
-//     }
-//
-// });
-
-// var Day = React.createClass({
-//
-//   render: function () {
-//     var dayEvent = this.props.myDay.number
-//     // var eventTitle = myEvents['0'][dayEvent];
-//     // if (eventTitle) {
-//     //   console.log('the title is: ' + eventTitle.title);
-//     //   this.props.myDay.eventTitle = eventTitle.title;
-//     //   this.props.myDay.eventStatus = eventTitle.status;
-//     //   this.props.myDay.eventLink = eventTitle.link;
-//     // }
-//     // console.log(eventTitle);
-//     if (dayEvent) {
-//         this.props.myDay.mydate = this.props.myDay.number +'.'+;
-//     }
-//     return (
-//       <div className={'single-day eventstatus'+this.props.myDay.eventStatus}>
-//         <span>{this.props.myDay.number}</span>
-//         {/*{ eventTitle && <a href={this.props.myDay.eventLink}>{this.props.myDay.eventTitle}</a> }        */}
-//       </div>
-//     )
-//   }
-//
-// });
-
+//week day's names
 const DayNames = React.createClass({
    render: function () {
      return (

@@ -1,0 +1,31 @@
+.event-preview {
+    display: none;
+}
+.single-day {
+    position: relative;
+    background: #eee;
+}
+.day-has-event {
+    cursor: pointer;
+}
+.event-status-1 {
+    background: green;
+}
+.event-status-2 {
+    background: #378fbf;
+}
+.event-status-3 {
+    background: orange;
+}
+.single-day:hover .event-preview {
+    display: block;
+    position: absolute;
+    top: -40px;
+    background: #ddd;
+    border: 1px solid black;
+}
+.event-preview p {
+    padding: 5px 10px;
+    display: block;
+    margin: 0;
+}
