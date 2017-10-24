@@ -45,16 +45,22 @@ var myMonths = [
 
 var myEvents = [
     {
-        "updated_at" : "2017-10-01T06:25:24Z",
-        "foo" : "bar"
+        "event_start" : "2017-10-04T06:25:24Z",
+        "event_end" : "2017-10-06T06:26:24Z",
+        "event_status" : "1",
+        "event_title" : "some problems",
     },
     {
-        "updated_at" : "2017-11-09T11:25:13Z",
-        "foo" : "bar"
+        "event_start" : "2017-11-09T11:25:13Z",
+        "event_end" : "2017-12-09T14:25:13Z",
+        "event_status" : "2",
+        "event_title" : "big problem",
     },
     {
-        "updated_at" : "2017-10-05T04:13:24Z",
-        "foo" : "bar"
+        "event_start" : "2017-10-05T04:13:24Z",
+        "event_end" : "2017-10-05T05:13:24Z",
+        "event_status" : "3",
+        "event_title" : "its very big problem!"
     }
 ];
 
@@ -90,8 +96,8 @@ var dateNow = new Date();
 var monthCurrent = dateNow.getMonth();
 var yearCurrent = dateNow.getFullYear();
 
-console.log(monthCurrent);
-console.log(yearCurrent);
+// console.log(monthCurrent);
+// console.log(yearCurrent);
 
 var Month = React.createClass({
 
@@ -151,20 +157,6 @@ var Month = React.createClass({
         // alert(stampfirstDay);
         // alert(stamplastDay);
 
-      console.log(myEvents.length);
-      var totalEvents = myEvents.length;
-      var eventsArray = [];
-
-      for (var count = 0; count < totalEvents; count++ ) {
-          var eventDate = new Date(myEvents[count].updated_at);
-          if (stampfirstDay < eventDate && eventDate < stamplastDay) {
-              eventsArray.push(
-                  myEvents[count]
-              );
-              console.log(count + 'hh');
-          }
-      }
-      console.log(eventsArray);
 
 
       let daysArray = [];
@@ -191,18 +183,66 @@ var Month = React.createClass({
       }
 
       for(var i = 1; i <= DIMCurrent; i++) {
+          daysEventsArray['day' + i] = {};
+      }
+      var totalEvents = myEvents.length;
+      var eventsArray = [ {'test': {}}];
+
+      for (var count = 0; count < totalEvents; count++ ) {
+          var eventStartDate = +new Date(myEvents[count].event_start);
+          let eventEndDate = +new Date(myEvents[count].event_end);
+
+          if ((stampfirstDay < eventStartDate && eventStartDate < stamplastDay) || (stampfirstDay < eventEndDate && eventEndDate < stamplastDay)) {
+
+              if (!(stampfirstDay < eventStartDate && eventStartDate < stamplastDay)) {
+                  var eventStartDayNum = 1;
+                  var eventStartDate = +new Date(yearCurrent, monthCurrent);
+                  console.log(eventStartDate + 'ESD');
+              }
+              else {
+                  var eventStartDayNum = (new Date(myEvents[count].event_start)).getDate();
+              }
+
+              let eventLength = Math.ceil((eventEndDate - eventStartDate)/86400000);
+
+              for (let z=1; z<=eventLength; z++) {
+
+                  var dayNumber = eventStartDayNum + z - 1;
+
+                  if (dayNumber <= DIMCurrent) {
+
+                      for (var i = 0; (daysEventsArray['day' + dayNumber][i]); i++) {}
+
+                      daysEventsArray['day' + dayNumber][i] = {};
+                      daysEventsArray['day' + dayNumber][i]['event_title'] = myEvents[count].event_title;
+                      daysEventsArray['day' + dayNumber][i]['event_status'] = myEvents[count].event_status;
+
+                  }
+
+              }
+
+          }
+      }
+      for(var i = 1; i <= DIMCurrent; i++) {
+
+          var toPush = '';
+
+          for (var z = 0; (daysEventsArray['day' + i][z]); z++) {
+              toPush += daysEventsArray['day' + i][z]['event_title'];
+          }
         daysArray.push(
           <div thedate={i+'.'+(monthCurrent+1)+'.'+yearCurrent} key={i}>
               <a href='#' onClick={this.dayClicked}>
                 {i}.{monthCurrent+1}.{yearCurrent}
+                  {toPush}
               </a>
           </div>
         );
-        daysEventsArray.push(
-            {
-                'dayNumber': i,
-            }
-        );
+        // daysEventsArray.push(
+        //     {
+        //         'dayNumber': i,
+        //     }
+        // );
       }
 
       console.log(daysEventsArray);
@@ -225,6 +265,7 @@ var Month = React.createClass({
               <div thedate={y+'.'+(monthNext+1)+'.'+yearNext} className='side-month' key={+('1.'+y)} >{y}.{monthNext+1}.{yearNext}</div>
           );
       }
+
 
 
 
