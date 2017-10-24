@@ -44,29 +44,20 @@ var myMonths = [
 ];
 
 var myEvents = [
-  {
-    0: {
-        title: 'Something happened',
-        status: 1,
-        link: 'google.com'
+    {
+        "updated_at" : "2017-10-01T06:25:24Z",
+        "foo" : "bar"
     },
-    1: {
-        title: 'another event',
-        status: 2,
-        link: 'yahoo.com'
+    {
+        "updated_at" : "2017-11-09T11:25:13Z",
+        "foo" : "bar"
     },
-    2: {
-        title: 'another bad event',
-        status: 3,
-        link: 'yahoo.com'
-    },
-    3: {
-        title: 'third event',
-        status: 3,
-        link: 'youtube.com'
+    {
+        "updated_at" : "2017-10-05T04:13:24Z",
+        "foo" : "bar"
     }
-  }
 ];
+
 
 function formatVal (val) {
     if (val > 11) {
@@ -135,12 +126,13 @@ var Month = React.createClass({
 
     },
 
+    dayClicked: function(e) {
+      e.preventDefault();
+      console.log(e);
+    },
+
   render: function() {
 
-    // var current = this.state.current;
-
-    // var days = dateNow.getDaysInMonth();
-    // var monthnum = this.props.monthnum;
 
       var monthCurrent = this.state.monthCurrent;
       var yearCurrent = this.state.yearCurrent;
@@ -151,13 +143,33 @@ var Month = React.createClass({
       var datePrev = new Date(yearCurrent, monthPrev);
       var DIMPrev = datePrev.getDaysInMonth();
 
-      console.log('lets start!: ');
-      console.log(monthCurrent +''+ yearCurrent);
-      console.log(DIMCurrent);
-      console.log(datePrev);
-      console.log(DIMPrev);
+
+      var stampfirstDay = +new Date(yearCurrent, monthCurrent, 1);
+      var stamplastDay = +new Date(yearCurrent, monthCurrent, DIMCurrent, 23, 59, 59);
+      var timestampFirst = new Date(stampfirstDay);
+      var timestampLast = new Date(stamplastDay);
+        // alert(stampfirstDay);
+        // alert(stamplastDay);
+
+      console.log(myEvents.length);
+      var totalEvents = myEvents.length;
+      var eventsArray = [];
+
+      for (var count = 0; count < totalEvents; count++ ) {
+          var eventDate = new Date(myEvents[count].updated_at);
+          if (stampfirstDay < eventDate && eventDate < stamplastDay) {
+              eventsArray.push(
+                  myEvents[count]
+              );
+              console.log(count + 'hh');
+          }
+      }
+      console.log(eventsArray);
+
 
       let daysArray = [];
+
+      let daysEventsArray = [];
 
       var dayOffset = dateCurrent.getDay() -1;
       if (dayOffset == -1) {
@@ -174,14 +186,35 @@ var Month = React.createClass({
       }
       for(var x = DIMPrev-dayOffset+1; x <= DIMPrev; x++) {
         daysArray.push(
-            <div thedate={x+'.'+monthPrev+'.'+yearPrev} className='side-month' key={+('0.'+x)}>{x}.{monthPrev}</div>
+            <div thedate={x+'.'+monthPrev+'.'+yearPrev} className='side-month' key={+('0.'+x)}>{x}.{monthPrev}.{yearPrev}</div>
         );
       }
 
       for(var i = 1; i <= DIMCurrent; i++) {
         daysArray.push(
-          <div thedate={i+'.'+(monthCurrent+1)+'.'+yearCurrent} key={i}>{i}.{monthCurrent}.{yearCurrent}</div>
+          <div thedate={i+'.'+(monthCurrent+1)+'.'+yearCurrent} key={i}>
+              <a href='#' onClick={this.dayClicked}>
+                {i}.{monthCurrent+1}.{yearCurrent}
+              </a>
+          </div>
         );
+        daysEventsArray.push(
+            {
+                'dayNumber': i,
+            }
+        );
+      }
+
+      console.log(daysEventsArray);
+
+
+      if (monthCurrent == 11) {
+          var monthNext = 0;
+          var yearNext = yearCurrent + 1;
+      }
+      else {
+          var monthNext = monthCurrent+1;
+          var yearNext = yearCurrent;
       }
 
       let PCDCount = i+dayOffset-1;
@@ -189,16 +222,17 @@ var Month = React.createClass({
 
       for(var y = 1; y <= daysNext; y++) {
           daysArray.push(
-              <div thedate={y+'.'+(monthCurrent+2)+'.'+yearCurrent} className='side-month' key={+('1.'+y)}>{y}.{monthCurrent+1}</div>
+              <div thedate={y+'.'+(monthNext+1)+'.'+yearNext} className='side-month' key={+('1.'+y)} >{y}.{monthNext+1}.{yearNext}</div>
           );
       }
+
 
 
     return (
       <div>
         <a href="#" onClick={this.changeMonth.bind(this, -1)} className={'testClass'}>prev</a>
         <a href="#" onClick={this.changeMonth.bind(this, 1)} className={'testClass'}>next</a>
-        <h1>{this.props.monthnum[monthCurrent].name}</h1>
+        <h1>{this.props.monthnum[monthCurrent].name} {yearCurrent}</h1>
         <DayNames/>
         {/*<h2>{this.state.currentDate}</h2>*/}
         {/*<h1 days={days}>{thismonth}</h1>*/}
