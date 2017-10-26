@@ -151,14 +151,8 @@ var Month = React.createClass({
           yearCurrent = this.state.yearCurrent,
           DIMCurrent = this.state.DIMCurrent,
           dateCurrent = new Date(yearCurrent, monthCurrent),
-          monthPrev = this.state.monthCurrent-1,
-          datePrev = new Date(yearCurrent, monthPrev),
-          DIMPrev = datePrev.getDaysInMonth(),
-          stampfirstDay = +new Date(yearCurrent, monthCurrent, 1),//first day's of current month timestamp
-          stamplastDay = +new Date(yearCurrent, monthCurrent, DIMCurrent, 23, 59, 59);//last day's of current month timestamp
+          firstDay = dateCurrent.getDay();
 
-      let daysArray = [],
-          daysEventsArray = [];
 
       //for week start at monday
       let dayOffset = dateCurrent.getDay() -1;
@@ -166,12 +160,32 @@ var Month = React.createClass({
           dayOffset = 6;
       }
 
-      let PCDCount = DIMCurrent+dayOffset;
-      let daysNext = (7*(Math.floor(PCDCount/7))+7)-PCDCount;
-      console.log(daysNext);
 
-      let stampDayPrevMonth =  stampfirstDay - (dayOffset * 86400000);
-      let stampDayNextMonth =  stampfirstDay + (daysNext * 86400000);
+      console.log (yearCurrent +' '+ monthCurrent);
+      // console.log(new Date(dateCurrent-dayOffset));
+
+      var daysToView = parseInt((DIMCurrent + dayOffset)/7)*7+7;
+      console.log(daysToView);
+      console.log(DIMCurrent);
+
+      var days = [];
+      var fullDate;
+      console.log(new Date(new Date(dateCurrent - (dayOffset * 86400000) + (1 * 86400000)).toString()));
+
+      // var dataTemplate = function () {
+          for (var i = 0; i < daysToView; i++) {
+              // console.log(new Date(dateCurrent-(dayOffset*86400000)+(i*86400000)));
+
+              fullDate = new Date(dateCurrent - (dayOffset * 86400000) + (i * 86400000));
+
+              days.push(
+                <Day key={i} date={fullDate.getDate()} fulldate={fullDate}></Day>
+              );
+
+
+          }
+      //     return days;
+      // }
 
       if (monthCurrent == 0) {
           var monthPrev = 12,
@@ -182,120 +196,9 @@ var Month = React.createClass({
               yearPrev = yearCurrent;
       }
 
-      //filling days array with part of prev month
-      for(var x = DIMPrev-dayOffset+1; x <= DIMPrev; x++) {
-        daysEventsArray['month'+'prev'+'day' + x] = {};
-      }
 
-      //filling array with day numbers of current month
-      for(var i = 1; i <= DIMCurrent; i++) {
-          daysEventsArray['month'+'current'+'day' + i] = {};
-      }
 
       let totalEvents = myEvents.length;
-
-      //adding events to days in current month array
-      function writeRequestedMonth (start, end, monthIndex, DIM) {
-          if (monthIndex == 'current') {
-              writeRequestedMonth(stampDayPrevMonth, stampfirstDay, 'prev', DIMPrev);
-          }
-          for (var count = 0; count < totalEvents; count++) {
-
-              var eventStartDate = +new Date(myEvents[count].event_start);
-              let eventEndDate = +new Date(myEvents[count].event_end);
-
-              //checking if this month have some events
-              if ((start < eventStartDate && eventStartDate < end) || (start < eventEndDate && eventEndDate < end)) {
-                  //true if event started in prev month
-
-                  if ((!(stampfirstDay < eventStartDate && eventStartDate < stamplastDay)) && (monthIndex == 'current')) {
-                      var eventStartDayNum = 1;
-                      var eventStartDate = +new Date(yearCurrent, monthCurrent);
-                  }
-                  //if event started in current month
-                  else {
-                      var eventStartDayNum = (new Date(myEvents[count].event_start)).getDate(); //day number of event start
-                      if (monthIndex == 'prev' && eventStartDayNum < (DIMPrev-dayOffset+1)) {
-                          eventStartDayNum = (DIMPrev-dayOffset+1);
-                      }
-                  var eventStartMonth = (new Date(myEvents[count].event_start)).getMonth(); //day number of event start
-                  // alert(eventStartDayNum + ' ' + eventStartMonth);
-                  }
-                  if (monthIndex != 'current') {
-                      console.log('first if'  + count);
-                      console.log(new Date(myEvents[count].event_start));
-                  }
-
-                  let eventLength = Math.ceil((eventEndDate - eventStartDate) / 86400000); //counting event length in days
-
-                  //for events few days length
-                  for (let z = 1; z <= eventLength; z++) {
-                      var dayNumber = eventStartDayNum + z - 1;
-                      if (dayNumber <= DIM) {
-                          //if this day already has a event, adding this event with another index
-                          for (var i = 0; (daysEventsArray['month' + monthIndex + 'day' + dayNumber][i]); i++) {
-                          }
-                          daysEventsArray['month' + monthIndex + 'day' + dayNumber][i] = {};
-                          daysEventsArray['month' + monthIndex + 'day' + dayNumber][i]['event_title'] = myEvents[count].event_title;
-                          daysEventsArray['month' + monthIndex + 'day' + dayNumber][i]['event_status'] = myEvents[count].event_status;
-                      }
-                  }
-
-              }
-          }
-      }
-      writeRequestedMonth(stampfirstDay, stamplastDay, 'current', DIMCurrent);
-
-
-      for(var i = 1; i <= DIMCurrent; i++) {
-
-        var toPush = [];
-        let eventStatus = 0;
-
-        if (daysEventsArray['month'+'current'+'day' + i][0]) {
-            for (var z = 0; (daysEventsArray['month'+'current'+'day' + i][z]); z++) {
-                toPush.push(
-                    daysEventsArray['month'+'current'+'day' + i][z]
-                )
-            }
-        }
-
-        let dayTemplate;
-
-        if (toPush.length) {
-            var toPush = toPush.map(function (item, index) {
-                eventStatus = item.event_status;
-                return (
-                    <p key={index}>
-                        {item.event_title}
-                    </p>
-                )
-            });
-
-            dayTemplate = (
-                <a href='#' onClick={this.dayClicked.bind(this, i)}>
-                    {i}
-                    <div className='event-preview'>
-                        { toPush }
-                    </div>
-                </a>
-            )
-        }
-        else {
-            dayTemplate = (i)
-        }
-
-
-        daysArray.push(
-          <div key={i} className={ 'single-day '+ (eventStatus ? 'day-has-event event-status-'+eventStatus : '') }>
-              {dayTemplate}
-          </div>
-        );
-        console.log(eventStatus);
-      }
-
-
-      console.log(daysEventsArray);
 
 
       if (monthCurrent == 11) {
@@ -307,13 +210,6 @@ var Month = React.createClass({
               yearNext = yearCurrent;
       }
 
-      //filling days array with part of next month
-      for(var y = 1; y <= daysNext; y++) {
-          daysArray.push(
-              <div thedate={y+'.'+(monthNext+1)+'.'+yearNext} className='side-month' key={+('1.'+y)} >{y}</div>
-          );
-      }
-      console.log(daysNext);
 
 
 
@@ -327,11 +223,19 @@ var Month = React.createClass({
         </div>
         <div className='calendar-body'>
            <DayNames/>
-           <div className='calendar'>{daysArray}</div>
+           <div className='calendar'>{days}asd</div>
         </div>
       </div>
     );
   }
+});
+
+var Day = React.createClass({
+   render: function () {
+       return (
+           <div>{this.props.date}<span>{this.props.fulldate.getFullYear()}</span></div>
+       )
+   }
 });
 
 //week day's names
