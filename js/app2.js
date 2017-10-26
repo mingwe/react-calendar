@@ -47,7 +47,7 @@ var myEvents = [
     {
         "event_start" : "2017-10-04T06:25:24Z",
         "event_end" : "2017-10-06T06:26:24Z",
-        "event_status" : "1",
+        "event_status" : "2",
         "event_title" : "some problems",
     },
     {
@@ -292,11 +292,15 @@ var Month = React.createClass({
 
     return (
       <div>
-        <a href="#" onClick={this.changeMonth.bind(this, -1)} className={'testClass'}>prev</a>
-        <a href="#" onClick={this.changeMonth.bind(this, 1)} className={'testClass'}>next</a>
-        <h1>{this.props.monthnum[monthCurrent].name} {yearCurrent}</h1>
-        <DayNames/>
-        <div className='calendar'>{daysArray}</div>
+        <div className='calendar-head'>
+            <a href="#" onClick={this.changeMonth.bind(this, -1)} className={'calendar-button calendar-button-prev'}>prev</a>
+            <h3 className={'calendar-title'}>{this.props.monthnum[monthCurrent].name} {yearCurrent}</h3>
+            <a href="#" onClick={this.changeMonth.bind(this, 1)} className={'calendar-button calendar-button-next'}>next</a>
+        </div>
+        <div className='calendar-body'>
+           <DayNames/>
+           <div className='calendar'>{daysArray}</div>
+        </div>
       </div>
     );
   }
