@@ -170,22 +170,63 @@ var Month = React.createClass({
 
       var days = [];
       var fullDate;
+      var daysTemplate;
       console.log(new Date(new Date(dateCurrent - (dayOffset * 86400000) + (1 * 86400000)).toString()));
 
-      // var dataTemplate = function () {
-          for (var i = 0; i < daysToView; i++) {
-              // console.log(new Date(dateCurrent-(dayOffset*86400000)+(i*86400000)));
+      let totalEvents = myEvents.length;
 
-              fullDate = new Date(dateCurrent - (dayOffset * 86400000) + (i * 86400000));
+      var daysEventsArray = [];
 
-              days.push(
-                <Day key={i} date={fullDate.getDate()} fulldate={fullDate}></Day>
-              );
+      for (var i = 0; i < daysToView; i++) {
+
+          fullDate = new Date(dateCurrent - (dayOffset * 86400000) + (i * 86400000));
+          // days.push(<Day key={i} date={fullDate.getDate()} fulldate={fullDate}></Day>);
+
+          daysEventsArray[+fullDate] = [];
 
 
+      }
+      for (var count = 0; count < totalEvents; count++ ) {
+
+          let eventStartDate = new Date(myEvents[count].event_start),
+              eventEndDate = +new Date(myEvents[count].event_end),
+              eventLength = Math.ceil((eventEndDate - +eventStartDate)/86400000),
+              eventStartDMY = +new Date(eventStartDate.getFullYear(), eventStartDate.getMonth(), eventStartDate.getDate());
+
+          for (var n = 0; n < eventLength; n++ ) {
+              let eventNextDay = eventStartDMY+(86400000*n);
+              if (eventNextDay in daysEventsArray) {
+                  for (var y = 0; (daysEventsArray[eventNextDay][y]); y++) {}
+                  daysEventsArray[eventNextDay][y] = {};
+                  daysEventsArray[eventNextDay][y].event_title = myEvents[count].event_title;
+                  daysEventsArray[eventNextDay][y].event_status = myEvents[count].event_status;
+              }
           }
-      //     return days;
-      // }
+
+      }
+      console.log(daysEventsArray);
+
+      //
+      // daysTemplate = daysEventsArray.map(function(item, index) {
+      //     console.log('test');
+      //
+      //     return (
+      //         <div key={index}>
+      //             <p className="news__author">{item}:</p>
+      //             <p className="news__text">{item}</p>
+      //         </div>
+      //     )
+      // });
+
+      var theDays;
+
+      daysTemplate = daysEventsArray.forEach(function (currentValue) {
+          console.log(currentValue);
+          return('asd');
+      });
+
+      console.log(daysTemplate);
+
 
       if (monthCurrent == 0) {
           var monthPrev = 12,
@@ -195,10 +236,6 @@ var Month = React.createClass({
           var monthPrev = monthCurrent,
               yearPrev = yearCurrent;
       }
-
-
-
-      let totalEvents = myEvents.length;
 
 
       if (monthCurrent == 11) {
@@ -223,7 +260,7 @@ var Month = React.createClass({
         </div>
         <div className='calendar-body'>
            <DayNames/>
-           <div className='calendar'>{days}asd</div>
+           <div className='calendar'>{daysTemplate}</div>
         </div>
       </div>
     );
