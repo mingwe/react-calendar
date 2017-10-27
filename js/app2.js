@@ -102,7 +102,9 @@ var EventsDay = React.createClass({
    render: function() {
        return (
          <div>
-             HERE WILL BE EVENTS FROM CURRENT DAY
+             <div>Events from day:<br/>
+             {new Date(this.props.params.thedate).toString()}
+             </div>
          </div>
        );
    }
@@ -112,6 +114,8 @@ var dateNow = new Date(),
     monthCurrent = dateNow.getMonth(),
     yearCurrent = dateNow.getFullYear();
 
+var onlyDateNow = new Date(yearCurrent, (monthCurrent), dateNow.getDate());
+
 var Month = React.createClass({
 
   getInitialState: function() {
@@ -119,9 +123,13 @@ var Month = React.createClass({
       monthCurrent: monthCurrent,
       yearCurrent: yearCurrent,
       DIMCurrent: dateNow.getDaysInMonth(),
-      picked: 1
+      picked: 1,
     };
   },
+
+    pickDate: function(value){
+        this.setState({picked:value});
+    },
 
     //onclick func for changing month
     changeMonth: function(step, e) {
@@ -147,15 +155,6 @@ var Month = React.createClass({
 
     },
 
-    //func when picking a day
-    dayClicked: function(i, e) {
-      e.preventDefault();
-      this.setState({
-         picked: this.state.picked= i+'.'+(this.state.monthCurrent+1)+'.'+this.state.yearCurrent
-      });
-      console.log(this.state.picked);
-    },
-
   render: function() {
 
       var monthCurrent = this.state.monthCurrent,
@@ -170,16 +169,9 @@ var Month = React.createClass({
           dayOffset = 6;
       }
 
-
-      console.log (yearCurrent +' '+ monthCurrent);
-      // console.log(new Date(dateCurrent-dayOffset));
-
       var daysToView = parseInt((DIMCurrent + dayOffset)/7)*7+7;
-      console.log(daysToView);
-      console.log(DIMCurrent);
 
       var fullDate;
-      console.log(new Date(new Date(dateCurrent - (dayOffset * DaySeconds) + (1 * DaySeconds)).toString()));
 
       let totalEvents = myEvents.length;
 
@@ -216,7 +208,7 @@ var Month = React.createClass({
       for (var i = 0; i < daysToView; i++) {
 
           daysArr = daysEventsArray[Object.keys(daysEventsArray)[i]];
-          daysTemplate.push(<Day key={i} fulldate={new Date(+(Object.keys(daysEventsArray)[i]))} mth={monthCurrent} event={daysArr[0] && daysArr}></Day>);
+          daysTemplate.push(<Day picked={this.pickDate} key={i} fulldate={new Date(+(Object.keys(daysEventsArray)[i]))} mth={monthCurrent} event={daysArr[0] && daysArr}></Day>);
 
       }
 
@@ -236,7 +228,14 @@ var Month = React.createClass({
   }
 });
 
+
 var Day = React.createClass({
+
+    pickDate: function(event) {
+        this.props.picked(+this.props.fulldate);
+        Action.setDate(+this.props.fulldate);
+    },
+
    render: function () {
        let event;
        let status = '';
@@ -265,8 +264,9 @@ var Day = React.createClass({
 
 
        return (
-           <div className={
-               ((this.props.fulldate < dateNow) ? 'day-passed ' : '') +
+           <div onClick={status && this.pickDate} className={
+               ((+this.props.fulldate == +onlyDateNow) ? ' day-current ' : '') +
+               ((this.props.fulldate < dateNow) ? ' day-passed ' : '') +
                (current && current) +' single-day ' +
                (status && 'day-has-event event-status-'+status)
            }>
@@ -294,12 +294,140 @@ const DayNames = React.createClass({
    }
 });
 
-ReactDOM.render(
-  <App />,
-  document.getElementById('calendar')
-);
 
-ReactDOM.render(
-    <EventsDay/>,
-    document.getElementById('events-block')
-);
+//Application State
+var MENU = {
+    Pasta: 0,
+    Salada: 1
+}
+
+//Payload
+var Payload = (function () {
+    function Payload(invokedActionType) {
+        this.actionType = invokedActionType;
+    }
+    console.log('Payload');
+    return Payload;
+})();
+
+//Action
+var Action = {
+    switchMenu: function(menu){
+        Dispatcher.handleViewAction(new Payload(menu));
+    },
+    setDate: function(newdate){
+        Dispatcher.handleViewAction(new Payload(newdate));
+    }
+}
+
+//Dispatcher
+var Dispatcher = {
+    callbacks: [],
+    handleViewAction: function(payload){
+        this.dispatch(payload);
+    },
+    register: function(callback){
+        this.callbacks.push(callback);
+    },
+    dispatch: function(payload){
+        this.callbacks.forEach(function(cb){
+            cb(payload);
+        });
+    }
+}
+
+//Store
+var DateStore = {
+    date: +onlyDateNow,
+    listeners: [],
+    getDate: function(){
+        return this.date;
+    },
+    setDate: function(newdate){
+        if(this.date != newdate){
+            this.date = newdate;
+            //emit the change
+            this.listeners.forEach(function(cb){
+                cb();
+            });
+        }
+    },
+    receive: function(payload){
+        this.setDate(payload.actionType);
+    },
+    addListener: function(callback){
+        this.listeners.push(callback);
+    }
+};
+
+//Context expresses the current application states to render the views.
+var getMyDate = function(){
+    return {
+        thedate: DateStore.getDate()
+    }
+}
+
+//View(Header)
+var Header = React.createClass({
+    handleClick: function(event) {
+        var selected = event.target.getAttribute("data-value");
+        Action.switchMenu(selected);
+    },
+    render: function() {
+        var self = this;
+        var selected = this.props.context.menu;
+        var menus = Object.keys(MENU).map(function(m){
+            return {name:m, value:MENU[m], className: (MENU[m] == selected ? "menu active" : "menu")}
+        });
+        var nodes = menus.map(function(m){
+            return <div data-value={m.value} className={m.className} onClick={self.handleClick}>{m.name}</div>;
+        });
+        return <div>{nodes}</div>;
+    }
+});
+
+
+//View(Pager)
+var Pager = React.createClass({
+    handleClick: function(event) {
+        var next = (this.props.context.menu == MENU.Pasta ? MENU.Salada : MENU.Pasta);
+        Action.switchMenu(next);
+    },
+    render: function() {
+        var arrow = (this.props.context.menu == MENU.Pasta ? ">>" : "<<");
+        return <button onClick={this.handleClick}>{arrow}</button>;
+    }
+})
+
+var initial = getMyDate();
+
+var calendar = ReactDOM.render(<App />, document.getElementById("calendar"));
+var events = ReactDOM.render(<EventsDay params={initial} />, document.getElementById("events-block"));
+
+//Add Dispatcher callback
+Dispatcher.register(function(payload){
+    DateStore.receive(payload);
+});
+
+//Add Store callback
+DateStore.addListener(function(){
+    [events].forEach(function(v){
+        v.setProps({params: getMyDate()});
+    })
+})
+
+
+
+//
+//
+//
+//
+// ReactDOM.render(
+//   <App />,
+//   document.getElementById('calendar')
+// );
+//
+// ReactDOM.render(
+//     <EventsDay date={pickedDate}/>,
+//     document.getElementById('events-block')
+// );
