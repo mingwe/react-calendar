@@ -1,4 +1,4 @@
-#root {
+#calendar {
     max-width: 300px;
     font-size: 20px;
     font-family: Roboto;
@@ -20,7 +20,7 @@
     /*border-top: 1px solid #d1d1d1;*/
     border-left: 1px solid #d1d1d1;
 }
-.side-month {
+.side-month span {
     color: #b2b2b2;
 }
 .side-month, .single-day {
@@ -35,8 +35,12 @@
     color: #5e5e5e;
     background: #fff;
 }
-.day-has-event {
+.day-passed {
+    background: #e7fae1;
+}
+.day-has-event span {
     cursor: pointer;
+    color: #fff;
 }
 .day-has-event a {
     color: #fff;
