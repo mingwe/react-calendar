@@ -220,11 +220,31 @@ var Month = React.createClass({
 
       var theDays;
 
-      daysTemplate = daysEventsArray.forEach(function (currentValue) {
-          console.log(currentValue);
-          return('asd');
-      });
+      // daysTemplate = daysEventsArray.forEach(function (currentValue) {
+      //     console.log(currentValue);
+      //     return('asd');
+      // });
 
+      var daysTemplate = [];
+      var daysArr;
+
+      for (var i = 0; i < daysToView; i++) {
+
+          daysArr = daysEventsArray[Object.keys(daysEventsArray)[i]]
+
+          if (daysArr[0]) {
+              for (var y = 0; (daysArr[y]); y++) {
+                  console.log(daysArr[y]['event_title']);
+                  console.log(daysArr[y]['event_status']);
+              }
+              daysTemplate.push(<Day key={i} fulldate={new Date(+(Object.keys(daysEventsArray)[i]))} event={daysArr}></Day>);
+          }
+          else {
+              console.log('no events');
+              daysTemplate.push(<Day key={i} fulldate={new Date(+(Object.keys(daysEventsArray)[i]))}></Day>);
+          }
+
+      }
       console.log(daysTemplate);
 
 
@@ -269,8 +289,21 @@ var Month = React.createClass({
 
 var Day = React.createClass({
    render: function () {
+       let event;
+       let status = '';
+       if (this.props.event) {
+           event = this.props.event.map(function(event, index){
+               if (event.event_status > status) {
+                   status = event.event_status;
+               }
+               return (
+                           <p className="event-title" key={index}>{event.event_title}</p>
+                   )
+           });
+           event = (<div className={'event-preview event-status-'+event.event_status}>{event}</div>);
+       }
        return (
-           <div>{this.props.date}<span>{this.props.fulldate.getFullYear()}</span></div>
+           <div className={'single-day event-status-' +status }>{this.props.date}<span>{this.props.fulldate.getDate()}{event}</span></div>
        )
    }
 });
