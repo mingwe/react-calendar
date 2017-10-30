@@ -45,40 +45,40 @@ var myMonths = [
 
 var myEvents = [
     {
-        "event_start" : "2017-09-26T06:25:24Z",
-        "event_end" : "2017-09-27T06:26:24Z",
-        "event_status" : "2",
-        "event_title" : "some problems",
+        "start" : "2017-09-26T06:25:24Z",
+        "end" : "2017-09-27T06:26:24Z",
+        "status" : "2",
+        "title" : "some problems",
     },
     {
-        "event_start" : "2017-10-04T06:25:24Z",
-        "event_end" : "2017-10-06T06:26:24Z",
-        "event_status" : "2",
-        "event_title" : "some problems",
+        "start" : "2017-10-04T06:25:24Z",
+        "end" : "2017-10-06T06:26:24Z",
+        "status" : "2",
+        "title" : "some problems",
     },
     {
-        "event_start" : "2017-11-09T21:59:59Z",
-        "event_end" : "2017-12-09T00:00:01Z",
-        "event_status" : "2",
-        "event_title" : "big problem",
+        "start" : "2017-11-09T21:59:59Z",
+        "end" : "2017-12-09T00:00:01Z",
+        "status" : "2",
+        "title" : "big problem",
     },
     {
-        "event_start" : "2017-10-05T04:13:24Z",
-        "event_end" : "2017-10-05T05:13:24Z",
-        "event_status" : "3",
-        "event_title" : "its very big problem!"
+        "start" : "2017-10-05T04:13:24Z",
+        "end" : "2017-10-05T05:13:24Z",
+        "status" : "3",
+        "title" : "its very big problem!"
     },
     {
-        "event_start" : "2017-10-25T04:13:24Z",
-        "event_end" : "2017-11-12T05:13:24Z",
-        "event_status" : "3",
-        "event_title" : "its very big problem 2!"
+        "start" : "2017-10-25T04:13:24Z",
+        "end" : "2017-11-12T05:13:24Z",
+        "status" : "3",
+        "title" : "its very big problem 2!"
     },
     {
-        "event_start" : "2017-11-01T04:13:24Z",
-        "event_end" : "2017-11-02T05:13:24Z",
-        "event_status" : "3",
-        "event_title" : "its very big problem 3!"
+        "start" : "2017-11-01T04:13:24Z",
+        "end" : "2017-11-02T05:13:24Z",
+        "status" : "3",
+        "title" : "its very big problem 3!"
     }
 ];
 
@@ -112,39 +112,27 @@ var App = React.createClass({
 });
 
 var eventsInDay = [
-    {
-        start : "2017-09-26T06:25:24Z",
-        end : "2017-09-27T06:26:24Z",
-        title : "some problems",
-        status : "2",
-        body : "lorem ipsum blablabla"
-    },
-    {
-        start : "2017-09-26T06:25:24Z",
-        end : "2017-09-27T06:26:24Z",
-        title : "another event",
-        status : "3",
-        body : "lorem ipsum IPSUM DA LOREM"
-    },
+
 ]
 
 var EventsDay = React.createClass({
 
     getInitialState: function() {
         return {
-            thedate: getMyDate()
+            thedate: getMyDate(),
+            events: []
         };
     },
 
-    componentDidMount: function() {
+    componentDidUpdate: function() {
 
         var self = this;
 
         var xhr = new XMLHttpRequest();
 
-        xhr.open('GET', 'single.json', true);
+        xhr.open('POST', 'single.json', true);
 
-        xhr.send(this.state.thedate); // (1)
+        xhr.send([this.state.thedate]); // (1)
 
         xhr.onreadystatechange = function() { // (3)
             if (xhr.readyState != 4) return;
@@ -152,35 +140,34 @@ var EventsDay = React.createClass({
             if (xhr.status != 200) {
                 alert(xhr.status + ': ' + xhr.statusText);
             } else {
-                var myFirstEvent = JSON.parse(xhr.responseText)[0];
-                // self.setState({
-                //     body: myFirstEvent.body,
-                // });
-                console.log(myFirstEvent.body);
+                var myFirstEvent = JSON.parse(xhr.responseText);
+                if (self.state.events.toString() !== myFirstEvent.toString() ) {
+                    self.setState({
+                        events: myFirstEvent,
+                    });
+                }
             }
 
         }
-        console.log('mounted.');
-
-        // this.setState({
-        //     loading: 'Загружаю...',
-        // });
     },
 
     render: function() {
 
-        console.log(this.props.events);
+        var eventsTemplate;
+        var eventsArr = this.state.events;
 
-        var eventsTemplate = this.props.events.map(function(event, index) {
-            return (
-
+        if (eventsArr.length > 0) {
+            eventsTemplate = eventsArr.map(function (event, index) {
+                return (
                     <div className="spoiler-event" key={index}>
-                        <div className="spoiler status-normal">Технические работы на сервере </div>
+                        <div className="spoiler status-normal">Технические работы на сервере</div>
                         <div className="spoiler-body">
                             <ul>
                                 <li>
                                     <div className="spoiler-list-ttl">{event.title}</div>
-                                    <div className="spoiler-list-body">19.09.2017 01:42 (GMT +2) – Технические работы завершены, все системы работают в штатном режиме</div>
+                                    <div className="spoiler-list-body">19.09.2017 01:42 (GMT +2) – Технические работы
+                                        завершены, все системы работают в штатном режиме
+                                    </div>
                                 </li>
                                 <li>
                                     <div className="spoiler-list-ttl">Тип:</div>
@@ -188,11 +175,11 @@ var EventsDay = React.createClass({
                                 </li>
                                 <li>
                                     <div className="spoiler-list-ttl">Начало работ:</div>
-                                    <div className="spoiler-list-body">{event.start} по Берлину (GMT +2) </div>
+                                    <div className="spoiler-list-body">{event.start} по Берлину (GMT +2)</div>
                                 </li>
                                 <li>
                                     <div className="spoiler-list-ttl">Окончание работ:</div>
-                                    <div className="spoiler-list-body">{event.end} по Берлину (GMT +2) </div>
+                                    <div className="spoiler-list-body">{event.end} по Берлину (GMT +2)</div>
                                 </li>
                                 <li>
                                     <div className="spoiler-list-ttl">Особенности:</div>
@@ -200,13 +187,22 @@ var EventsDay = React.createClass({
                                 </li>
                                 <li>
                                     <div className="spoiler-list-ttl">Инструкция для пользователей:</div>
-                                    <div className="spoiler-list-body">С вашей стороны не требуется никаких активных действий.</div>
+                                    <div className="spoiler-list-body">С вашей стороны не требуется никаких активных
+                                        действий.
+                                    </div>
                                 </li>
                             </ul>
                         </div>
                     </div>
-            )
-        })
+                )
+            })
+        }
+        else {
+            eventsTemplate =
+                    <div className={'nothing-happened'}>
+                        Событий нет
+                    </div>
+        }
 
         return (
           <div>
@@ -300,8 +296,8 @@ var Month = React.createClass({
 
       for (var count = 0; count < totalEvents; count++ ) {
 
-          let eventStartDate = new Date(myEvents[count].event_start),
-              eventEndDate = new Date(myEvents[count].event_end);
+          let eventStartDate = new Date(myEvents[count].start),
+              eventEndDate = new Date(myEvents[count].end);
 
           eventStartDate = +new Date(eventStartDate.getFullYear(), eventStartDate.getMonth(), eventStartDate.getDate());
 
@@ -315,8 +311,8 @@ var Month = React.createClass({
               if (eventNextDay in daysEventsArray) {
                   for (var y = 0; (daysEventsArray[eventNextDay][y]); y++) {}
                   daysEventsArray[eventNextDay][y] = {};
-                  daysEventsArray[eventNextDay][y].event_title = myEvents[count].event_title;
-                  daysEventsArray[eventNextDay][y].event_status = myEvents[count].event_status;
+                  daysEventsArray[eventNextDay][y].title = myEvents[count].title;
+                  daysEventsArray[eventNextDay][y].status = myEvents[count].status;
               }
           }
       }
@@ -362,11 +358,11 @@ var Day = React.createClass({
 
        if (this.props.event) {
            event = this.props.event.map(function(event, index){
-               if (event.event_status > status) {
-                   status = event.event_status;
+               if (event.status > status) {
+                   status = event.status;
                }
                return (
-                           <p className="event-title" key={index}>{event.event_title}</p>
+                           <p className="event-title" key={index}>{event.title}</p>
                    )
            });
            event = (<div className={'event-preview'}>{event}</div>);

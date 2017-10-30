@@ -4,7 +4,7 @@
     font-family: Roboto;
     text-align: center;
 }
-.calendar > div, .dayName {
+.events-calendar > div, .dayName {
     width: 14.28%;
     /*padding: 10px;*/
     box-sizing: border-box;
@@ -22,7 +22,7 @@
     color: #5e5e5e;
     font-weight: 300;
 }
-.calendar {
+.events-calendar {
     /*border-top: 1px solid #d1d1d1;*/
     border-left: 1px solid #d1d1d1;
 }
