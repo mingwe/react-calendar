@@ -105,3 +105,142 @@
 .dayNames {
     border-right: 1px solid #898989;
 }
+
+
+
+
+.date {
+    color: #378fbf;
+    margin-bottom: 10px;
+    margin-top: 30px;
+    float: left;
+}
+.spoiler {
+    position: relative;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.spoiler, .spoiler-body li {
+    background-color: #f2f2f2;
+    padding: 9px 20px;
+    font-weight: 600;
+    box-sizing: border-box;
+    float: left;
+    width: 100%;
+}
+.spoiler-body {
+    /*display: none;*/
+    float: left;
+}
+.spoiler-body li {
+    list-style: none;
+    border-bottom: 1px solid #e2e2e2;
+    float: left;
+    width: 100%;
+    font-size: 13px;
+}
+.spoiler-body li:first-child {
+    background-color: #a5d499;
+}
+.spoiler-body li:last-child {
+    border-bottom: none;
+}
+.spoiler-list-ttl, .spoiler-list-body {
+    display: inline-block;
+    float: left;
+}
+.spoiler-list-ttl {
+    width: 30%;
+}
+.spoiler-list-body {
+    width: 70%;
+}
+.spoiler-event {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    float: left;
+    width: 100%;
+}
+.spoiler::after {
+    content: ' ';
+    background: url(../images/svg/arrow_down_blue.svg) left center no-repeat;
+    position: absolute;
+    height: 9px;
+    width: 12px;
+    background-size: 100%;
+    right: 12px;
+    top: 50%;
+    margin-top: -4px;
+}
+.spoiler.open, .spoiler:hover {
+    background: #dbdfe3;
+}
+.spoiler.open::after {
+    background: url(../images/svg/arrow_right_blue.svg) left center no-repeat;
+    width: 9px;
+    height: 12px;
+}
+.status-important::before, .status-normal::before, .status-good::before {
+    content: ' ';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 14px;
+    height: 100%;
+}
+.status-important::before {
+    background: #f3bb60;
+}
+.status-normal::before {
+    background: #378fbf;
+}
+.status-good::before {
+    background: #4bb02f;
+}
+
+@media (max-width: 1280px) {
+    @media (min-width: 769px) {
+        .status-block-inner {
+            padding: 15px;
+        }
+
+        .status-block {
+            padding: 0 10px;
+        }
+    }
+}
+
+@media (max-width: 992px) {
+    .main-content {
+        width: 100%;
+        padding-right: 0px;
+    }
+    .main-sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .status-block {
+        width: 100%;
+        margin: 0px auto 30px auto;
+        float: none;
+        clear: both;
+        display: block;
+        max-width: 500px;
+    }
+}
+
+@media (max-width: 600px) {
+    #status-tabs label {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+        margin-top: 15px;
+        transition: 0s;
+        opacity: 1 !important;
+    }
+    #status-tabs {
+        margin-top: 0px;
+    }
+}

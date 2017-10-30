@@ -58,7 +58,7 @@ var myEvents = [
     },
     {
         "event_start" : "2017-11-09T21:59:59Z",
-        "event_end" : "2017-12-09T23:59:59Z",
+        "event_end" : "2017-12-09T00:00:01Z",
         "event_status" : "2",
         "event_title" : "big problem",
     },
@@ -67,10 +67,23 @@ var myEvents = [
         "event_end" : "2017-10-05T05:13:24Z",
         "event_status" : "3",
         "event_title" : "its very big problem!"
+    },
+    {
+        "event_start" : "2017-10-25T04:13:24Z",
+        "event_end" : "2017-11-12T05:13:24Z",
+        "event_status" : "3",
+        "event_title" : "its very big problem 2!"
+    },
+    {
+        "event_start" : "2017-11-01T04:13:24Z",
+        "event_end" : "2017-11-02T05:13:24Z",
+        "event_status" : "3",
+        "event_title" : "its very big problem 3!"
     }
 ];
 
-const DaySeconds = 86400000;
+const DaySeconds = 86400000,
+      HourSeconds = 60000;
 
 //func for formatting val to numbers from 0 to 11
 function formatVal (val) {
@@ -98,16 +111,111 @@ var App = React.createClass({
 
 });
 
+var eventsInDay = [
+    {
+        start : "2017-09-26T06:25:24Z",
+        end : "2017-09-27T06:26:24Z",
+        title : "some problems",
+        status : "2",
+        body : "lorem ipsum blablabla"
+    },
+    {
+        start : "2017-09-26T06:25:24Z",
+        end : "2017-09-27T06:26:24Z",
+        title : "another event",
+        status : "3",
+        body : "lorem ipsum IPSUM DA LOREM"
+    },
+]
+
 var EventsDay = React.createClass({
-   render: function() {
-       return (
-         <div>
-             <div>Events from day:<br/>
-             {new Date(this.props.params.thedate).toString()}
-             </div>
-         </div>
-       );
-   }
+
+    getInitialState: function() {
+        return {
+            thedate: getMyDate()
+        };
+    },
+
+    componentDidMount: function() {
+
+        var self = this;
+
+        var xhr = new XMLHttpRequest();
+
+        xhr.open('GET', 'single.json', true);
+
+        xhr.send(this.state.thedate); // (1)
+
+        xhr.onreadystatechange = function() { // (3)
+            if (xhr.readyState != 4) return;
+
+            if (xhr.status != 200) {
+                alert(xhr.status + ': ' + xhr.statusText);
+            } else {
+                var myFirstEvent = JSON.parse(xhr.responseText)[0];
+                // self.setState({
+                //     body: myFirstEvent.body,
+                // });
+                console.log(myFirstEvent.body);
+            }
+
+        }
+        console.log('mounted.');
+
+        // this.setState({
+        //     loading: 'Загружаю...',
+        // });
+    },
+
+    render: function() {
+
+        console.log(this.props.events);
+
+        var eventsTemplate = this.props.events.map(function(event, index) {
+            return (
+
+                    <div className="spoiler-event" key={index}>
+                        <div className="spoiler status-normal">Технические работы на сервере </div>
+                        <div className="spoiler-body">
+                            <ul>
+                                <li>
+                                    <div className="spoiler-list-ttl">{event.title}</div>
+                                    <div className="spoiler-list-body">19.09.2017 01:42 (GMT +2) – Технические работы завершены, все системы работают в штатном режиме</div>
+                                </li>
+                                <li>
+                                    <div className="spoiler-list-ttl">Тип:</div>
+                                    <div className="spoiler-list-body">{event.status}</div>
+                                </li>
+                                <li>
+                                    <div className="spoiler-list-ttl">Начало работ:</div>
+                                    <div className="spoiler-list-body">{event.start} по Берлину (GMT +2) </div>
+                                </li>
+                                <li>
+                                    <div className="spoiler-list-ttl">Окончание работ:</div>
+                                    <div className="spoiler-list-body">{event.end} по Берлину (GMT +2) </div>
+                                </li>
+                                <li>
+                                    <div className="spoiler-list-ttl">Особенности:</div>
+                                    <div className="spoiler-list-body">{event.body}</div>
+                                </li>
+                                <li>
+                                    <div className="spoiler-list-ttl">Инструкция для пользователей:</div>
+                                    <div className="spoiler-list-body">С вашей стороны не требуется никаких активных действий.</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+            )
+        })
+
+        return (
+          <div>
+              <div className="date">{new Date(this.state.thedate).toString()}</div>
+              {/*<div>event: {this.state.body}</div>*/}
+              {eventsTemplate}
+          </div>
+        );
+    }
 });
 
 var dateNow = new Date(),
@@ -169,6 +277,13 @@ var Month = React.createClass({
           dayOffset = 6;
       }
 
+      function roundDate(datestamp) {
+          let offset = new Date(datestamp).getTimezoneOffset()*HourSeconds;
+          return (
+              Math.round((datestamp) / DaySeconds)*DaySeconds + offset
+          )
+      }
+
       var daysToView = parseInt((DIMCurrent + dayOffset)/7)*7+7;
 
       var fullDate;
@@ -179,20 +294,24 @@ var Month = React.createClass({
 
       for (var i = 0; i < daysToView; i++) {
 
-          fullDate = new Date(dateCurrent - (dayOffset * DaySeconds) + (i * DaySeconds));
-          daysEventsArray[+fullDate] = [];
-
-
+          fullDate = roundDate(+(new Date(dateCurrent - (dayOffset * DaySeconds) + (i * DaySeconds))));
+          daysEventsArray[fullDate] = [];
       }
+
       for (var count = 0; count < totalEvents; count++ ) {
 
           let eventStartDate = new Date(myEvents[count].event_start),
-              eventEndDate = +new Date(myEvents[count].event_end),
-              eventLength = Math.ceil((eventEndDate - +eventStartDate)/DaySeconds),
-              eventStartDMY = +new Date(eventStartDate.getFullYear(), eventStartDate.getMonth(), eventStartDate.getDate());
+              eventEndDate = new Date(myEvents[count].event_end);
+
+          eventStartDate = +new Date(eventStartDate.getFullYear(), eventStartDate.getMonth(), eventStartDate.getDate());
+
+          eventEndDate = new Date(+eventEndDate + eventEndDate.getTimezoneOffset()*HourSeconds);
+
+          let eventLength = Math.ceil((+eventEndDate - +eventStartDate)/DaySeconds);
 
           for (var n = 0; n < eventLength; n++ ) {
-              let eventNextDay = eventStartDMY+(DaySeconds*n);
+              let eventNextDay = eventStartDate+(DaySeconds*n);
+              eventNextDay = roundDate(eventNextDay);
               if (eventNextDay in daysEventsArray) {
                   for (var y = 0; (daysEventsArray[eventNextDay][y]); y++) {}
                   daysEventsArray[eventNextDay][y] = {};
@@ -255,24 +374,18 @@ var Day = React.createClass({
        if (this.props.fulldate.getMonth() != this.props.mth) {
             current = 'side-month';
        }
-       if (this.props.fulldate < dateNow) {
-           console.log('prev');
-       }
-       else {
-           console.log('new');
-       }
-
 
        return (
-           <div onClick={status && this.pickDate} className={
-               ((+this.props.fulldate == +onlyDateNow) ? ' day-current ' : '') +
-               ((this.props.fulldate < dateNow) ? ' day-passed ' : '') +
-               (current && current) +' single-day ' +
-               (status && 'day-has-event event-status-'+status)
-           }>
-               {this.props.date}
-               <span>{this.props.fulldate.getDate()}{event}</span>
-           </div>
+
+       <div onClick={status && this.pickDate} className={
+           ((+this.props.fulldate == +onlyDateNow) ? ' day-current ' : '') +
+           ((this.props.fulldate < dateNow) ? ' day-passed ' : '') +
+           (current && current) +' single-day ' +
+           (status && 'day-has-event event-status-'+status)
+       }>
+           {this.props.date}
+           <span>{this.props.fulldate.getDate()}{event}</span>
+       </div>
        )
    }
 });
@@ -294,13 +407,6 @@ const DayNames = React.createClass({
    }
 });
 
-
-//Application State
-var MENU = {
-    Pasta: 0,
-    Salada: 1
-}
-
 //Payload
 var Payload = (function () {
     function Payload(invokedActionType) {
@@ -312,9 +418,6 @@ var Payload = (function () {
 
 //Action
 var Action = {
-    switchMenu: function(menu){
-        Dispatcher.handleViewAction(new Payload(menu));
-    },
     setDate: function(newdate){
         Dispatcher.handleViewAction(new Payload(newdate));
     }
@@ -362,47 +465,11 @@ var DateStore = {
 
 //Context expresses the current application states to render the views.
 var getMyDate = function(){
-    return {
-        thedate: DateStore.getDate()
-    }
+    return DateStore.getDate()
 }
 
-//View(Header)
-var Header = React.createClass({
-    handleClick: function(event) {
-        var selected = event.target.getAttribute("data-value");
-        Action.switchMenu(selected);
-    },
-    render: function() {
-        var self = this;
-        var selected = this.props.context.menu;
-        var menus = Object.keys(MENU).map(function(m){
-            return {name:m, value:MENU[m], className: (MENU[m] == selected ? "menu active" : "menu")}
-        });
-        var nodes = menus.map(function(m){
-            return <div data-value={m.value} className={m.className} onClick={self.handleClick}>{m.name}</div>;
-        });
-        return <div>{nodes}</div>;
-    }
-});
-
-
-//View(Pager)
-var Pager = React.createClass({
-    handleClick: function(event) {
-        var next = (this.props.context.menu == MENU.Pasta ? MENU.Salada : MENU.Pasta);
-        Action.switchMenu(next);
-    },
-    render: function() {
-        var arrow = (this.props.context.menu == MENU.Pasta ? ">>" : "<<");
-        return <button onClick={this.handleClick}>{arrow}</button>;
-    }
-})
-
-var initial = getMyDate();
-
 var calendar = ReactDOM.render(<App />, document.getElementById("calendar"));
-var events = ReactDOM.render(<EventsDay params={initial} />, document.getElementById("events-block"));
+var events = ReactDOM.render(<EventsDay events={eventsInDay}/>, document.getElementById("events-block"));
 
 //Add Dispatcher callback
 Dispatcher.register(function(payload){
@@ -412,22 +479,6 @@ Dispatcher.register(function(payload){
 //Add Store callback
 DateStore.addListener(function(){
     [events].forEach(function(v){
-        v.setProps({params: getMyDate()});
+        v.setState({thedate: getMyDate()});
     })
-})
-
-
-
-//
-//
-//
-//
-// ReactDOM.render(
-//   <App />,
-//   document.getElementById('calendar')
-// );
-//
-// ReactDOM.render(
-//     <EventsDay date={pickedDate}/>,
-//     document.getElementById('events-block')
-// );
+});
